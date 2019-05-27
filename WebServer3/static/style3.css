@@ -1,0 +1,46 @@
+
+@keyframes animatedBackground {
+    from {background-position: 0 0; }
+    to { background-position: 100% 0; }
+}
+@-webkit-keyframes animatedBackground {
+    from { background-position: 0 0; }
+    to { background-position: 100% 0; }
+}
+@-ms-keyframes animatedBackground {
+    from { background-position: 0 0; }
+    to { background-position: 100% 0; }
+}
+@-moz-keyframes animatedBackground {
+    from { background-position: 0 0; }
+    to { background-position: 100% 0; }
+}
+
+#animate-area {
+    width: 560px;
+    height: 400px;
+    background-image: url("bg-clouds.png");
+    background-position: 0px 0px;
+    background-repeat: repeat-x;
+
+    animation: animatedBackground 60s linear infinite;
+    -ms-animation: animatedBackground 60s linear infinite;
+    -moz-animation: animatedBackground 60s linear infinite;
+    -webkit-animation: animatedBackground 60s linear infinite;
+}
+
+.button {
+    font: bold 15px Open Sans;
+    text-decoration: none;
+    background-color: #EEEEEE;
+    color: #333333;
+    padding: 2px 6px 2px 6px;
+    border-top: 1px solid #CCCCCC;
+    border-right: 1px solid #333333;
+    border-bottom: 1px solid #333333;
+    border-left: 1px solid #CCCCCC;
+}
+
+img{
+    display: display: inline-block
+}

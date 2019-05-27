@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Sensor Data from Eventyr II</title>
+    <link rel="stylesheet" href='../static/style.css'/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+      body {
+      text-align: center;
+      }
+      #g1,
+      #g2,
+      #g3 {
+      width: 200px;
+      height: 160px;
+      display: inline-block;
+      margin: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Sensor Data from Eventyr II</h1>
+    <div id="g1"></div>
+    <div id="g2"></div>
+    <div id="g3"></div>
+    <hr>
+    <h3> Last Sensors Reading: {{ time }} ==> <a href="/"class="button">REFRESH</a></h3>
+    <hr>
+    <p> @2018 Developed by MJRoBot.org</p>
+
+    <script src="../static/raphael-2.1.4.min.js"></script>
+    <script src="../static/justgage.js"></script>
+    <script>
+      var g1, g2, g3;
+      document.addEventListener("DOMContentLoaded", function(event) {
+      g1 = new JustGage({
+      id: "g1",
+      value: {{temp_outside}},
+      valueFontColor: "black",
+      min: -10,
+      max: 30,
+      title: "Temperature Outside",
+      label: "Celcius"
+      });
+      g1 = new JustGage({
+      id: "g2",
+      value: {{temp_inside}},
+      valueFontColor: "black",
+      min: -10,
+      max: 30,
+      title: "Temperature Inside",
+      label: "Celcius"
+      });
+      g2 = new JustGage({
+      id: "g3",
+      value: {{hum_inside}},
+      valueFontColor: "black",
+      min: 0,
+      max: 100,
+      title: "Humidity inside",
+      label: "%"
+      });
+      });
+    </script>
+  </body>
+  </html>

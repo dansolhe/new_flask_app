@@ -1,0 +1,15 @@
+import pyodbc
+
+conn = pyodbc.connect('Driver={ODBC Driver 13 for SQL Server};'
+                      'Server=tcp:arduino-dev.database.windows.net,1433;'
+                      'Database=ARDUINO-SENSORS-DEV;'
+                      'UID=arduino-dev-admin@arduino-dev;'
+                      'PWD=9120Cool;'
+                      'Trusted_Connection=yes;'
+                      'Encrypt=True;')
+
+cursor = conn.cursor()
+cursor.execute('SELECT TOP 10 FROM Facts.All_Info')
+
+for row in cursor:
+    print(row)
