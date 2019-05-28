@@ -21,8 +21,8 @@ curs = conn.cursor()
 
 
 # Retrieve last data from database
-def getLastData():
-    for row in curs.execute('SELECT TOP 1 ScriptDato, ScriptTid, Ovn, Avfukter, Temp_inne, Temp_ute, Luftfuktighet_inne, Luftfuktighet_ute, Gassverdi_inne, Temp_Ute2, Lys_ute FROM Facts.All_Info WHERE ScriptDato > DATEADD(DAY, -7, GETDATE()) AND Temp_inne IS NOT NULL ORDER BY ScriptDato DESC, ScriptTid DESC;'):
+def getLastData(locationID):
+    for row in curs.execute("SELECT TOP 1 ScriptDato, ScriptTid, Ovn, Avfukter, Temp_inne, Temp_ute, Luftfuktighet_inne, Luftfuktighet_ute, Gassverdi_inne, Temp_Ute2, Lys_ute FROM Facts.All_Info WHERE ScriptDato > DATEADD(DAY, -7, GETDATE()) AND LokasjonsID = '"+locationID+"' AND Temp_inne IS NOT NULL ORDER BY ScriptDato DESC, ScriptTid DESC;"):
         date = str(row[0])
         time = str(row[1])
         heater = row[2]
@@ -37,8 +37,8 @@ def getLastData():
     return date, time, heater, dehumid, temp_inside, temp_outside, hum_inside, hum_outside, air_inside, light_outside
 
 # Get 'x' samples of historical data
-def getHistData (numSamples):
-    curs.execute('SELECT TOP '+str(numSamples)+' ScriptDato, ScriptTid, Temp_inne, Temp_ute, Luftfuktighet_inne FROM Facts.All_Info WHERE ScriptDato > DATEADD(DAY, -7, GETDATE()) AND Temp_inne IS NOT NULL ORDER BY ScriptDato DESC, ScriptTid DESC;')
+def getHistData (numSamples, locationID):
+    curs.execute("SELECT TOP "+str(numSamples)+" ScriptDato, ScriptTid, Temp_inne, Temp_ute, Luftfuktighet_inne FROM Facts.All_Info WHERE ScriptDato > DATEADD(DAY, -7, GETDATE()) AND LokasjonsID = '"+locationID+"' AND Temp_inne IS NOT NULL ORDER BY ScriptDato DESC, ScriptTid DESC;")
     data = curs.fetchall()
     datetimes = []
     temps_inside = []
@@ -69,7 +69,7 @@ def maxRowsTable():
 
 # Get sample frequency in minutes
 def freqSample():
-    datetimes, temps1, temps2, hums = getHistData(2)
+    datetimes, temps1, temps2, hums = getHistData(2, "EII")
     #fmt = '%Y-%m-%d %H:%M:%S'
     freq = datetimes[1]-datetimes[0]
     freq = int(round(freq.total_seconds()/60))
@@ -78,17 +78,17 @@ def freqSample():
 # define and initialize global variables
 global freqSamples
 freqSamples = freqSample()
-
 global rangeTime
 rangeTime = 12
-
 global numSamples
 numSamples = rangeTime*60 // freqSamples
+global locationID
+locationID = "EII"
 
 # main route
 @app.route("/")
 def index():
-    date, time, heater, dehumid, temp_inside, temp_outside, hum_inside, hum_outside, air_inside, light_outside = getLastData()
+    date, time, heater, dehumid, temp_inside, temp_outside, hum_inside, hum_outside, air_inside, light_outside = getLastData(locationID)
     templateData = {
         'date': date,
         'time': time,
@@ -110,35 +110,61 @@ def my_form_post():
     global numSamples
     global freqSamples
     global rangeTime
-    rangeTime = int (request.form['rangeTime'])
-    if (rangeTime*60 < freqSamples):
-        rangeTime = freqSamples + 1
-    numSamples = rangeTime*60 // freqSamples #Entering rangeTime in hours on webpage
-    numMaxSamples = maxRowsTable()
-    if (numSamples > numMaxSamples):
-        numSamples = (numMaxSamples-1)
+    global locationID
 
-    date, time, heater, dehumid, temp_inside, temp_outside, hum_inside, hum_outside, air_inside, light_outside = getLastData()
-    templateData = {
-        'date': date,
-        'time': time,
-        'heater': heater,
-        'dehumid': dehumid,
-        'temp_inside': temp_inside,
-        'temp_outside': temp_outside,
-        'hum_inside': hum_inside,
-        'hum_outside': hum_outside,
-        'air_inside': air_inside,
-        'light_outside': light_outside,
-        'freq': freqSamples,
-        'rangeTime': rangeTime
-    }
-    return render_template('index.html', **templateData)
+    if ("locationForm" in request.form):
+        locationID = request.form['locationForm']
+        print(locationID)
+        date, time, heater, dehumid, temp_inside, temp_outside, hum_inside, hum_outside, air_inside, light_outside = getLastData(locationID)
+        templateData = {
+        	'date': date,
+        	'time': time,
+        	'heater': heater,
+        	'dehumid': dehumid,
+        	'temp_inside': temp_inside,
+        	'temp_outside': temp_outside,
+        	'hum_inside': hum_inside,
+        	'hum_outside': hum_outside,
+        	'air_inside': air_inside,
+        	'light_outside': light_outside,
+        	'freq': freqSamples,
+        	'rangeTime': rangeTime
+        }
+        return render_template('index.html', **templateData)
+
+    if ("rangeTime" in request.form):
+        rangeTime = int (request.form['rangeTime'])
+        if (rangeTime*60 < freqSamples):
+            rangeTime = freqSamples + 1
+            #Entering rangeTime in hours on webpage
+            numSamples = rangeTime*60 // freqSamples
+        numMaxSamples = maxRowsTable()
+        if (numSamples > numMaxSamples):
+            numSamples = (numMaxSamples-1)
+
+        date, time, heater, dehumid, temp_inside, temp_outside, hum_inside, hum_outside, air_inside, light_outside = getLastData(locationID)
+        templateData = {
+    	    'date': date,
+    	    'time': time,
+    	    'heater': heater,
+    	    'dehumid': dehumid,
+    	    'temp_inside': temp_inside,
+            'temp_outside': temp_outside,
+    	    'hum_inside': hum_inside,
+    	    'hum_outside': hum_outside,
+    	    'air_inside': air_inside,
+    	    'light_outside': light_outside,
+    	    'freq': freqSamples,
+    	    'rangeTime': rangeTime
+        }
+        return render_template('index.html', **templateData)
+
+    return "OK"
 
 
 @app.route('/plot/temp')
 def plot_temp():
-    datetimes, temps_inside, temps_outside, hums_inside = getHistData(numSamples)
+    datetimes, temps_inside, temps_outside, hums_inside = getHistData(numSamples, locationID)
     ys1 = temps_inside
     ys2 = temps_outside
     fig = Figure()
@@ -161,7 +187,7 @@ def plot_temp():
 
 @app.route('/plot/hum')
 def plot_hum():
-    datetimes, temps_inside, temps_outside, hums_inside = getHistData(numSamples)
+    datetimes, temps_inside, temps_outside, hums_inside = getHistData(numSamples, locationID)
     ys1 = hums_inside
     fig = Figure()
     axis = fig.add_subplot(1, 1, 1)
