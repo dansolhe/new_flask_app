@@ -9,6 +9,8 @@ verify_ssl = true
 flask = "==1.0.2"
 pymongo = "==3.7.2"
 marshmallow = "==2.16.3"
+pyjwt = "==1.7.1"
+flask-cors = "==3.0.7"
 
 [requires]
 python_version = "2.7"
